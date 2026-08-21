@@ -191,6 +191,85 @@
     background: #fff;
   }
 
+  .synth {
+    background: var(--panel);
+    border-radius: 24px;
+    padding: 32px;
+    margin-top: 24px;
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 20px;
+    align-items: flex-end;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .field select, .field input[type="range"] {
+    accent-color: var(--accent);
+  }
+
+  .field output {
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .keys {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 16px 0;
+  }
+
+  .key {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    min-width: 48px;
+    text-align: center;
+  }
+
+  .key:active, .key.playing {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .btn-flat {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 980px;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  .btn-flat.secondary {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+
   footer {
     text-align: center;
     padding: 48px 24px 96px;
@@ -254,9 +333,66 @@ cargo test</pre>
 
 <section>
   <h2>Try it in the browser</h2>
-  <p style="color: var(--muted);">This button uses the Web Audio API to play a 440Hz tone directly, a small live echo of what the <code>tone</code> command renders to a WAV file.</p>
-  <button id="tone-btn">Play 440Hz tone</button>
-  <div id="tone-status"></div>
+  <p style="color: var(--muted);">This is the same oscillator math and ADSR envelope as <code>src/oscillator.rs</code> and <code>src/envelope.rs</code>, run in JavaScript to fill a WebAudio buffer directly, no oscillator node involved. Pick a wave, shape the envelope, then play a note or a short melody.</p>
+
+  <div class="synth">
+    <div class="row">
+      <div class="field">
+        <label for="waveform">Waveform</label>
+        <select id="waveform">
+          <option value="sine">Sine</option>
+          <option value="square">Square</option>
+          <option value="sawtooth">Sawtooth</option>
+          <option value="triangle">Triangle</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="octave">Octave</label>
+        <select id="octave">
+          <option value="3">3</option>
+          <option value="4" selected>4</option>
+          <option value="5">5</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="freq">Frequency (Hz)</label>
+        <input type="range" id="freq" min="55" max="1760" step="1" value="440">
+        <output id="freq-out">440 Hz</output>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="attack">Attack</label>
+        <input type="range" id="attack" min="0" max="1" step="0.01" value="0.05">
+        <output id="attack-out">0.05 s</output>
+      </div>
+      <div class="field">
+        <label for="decay">Decay</label>
+        <input type="range" id="decay" min="0" max="1" step="0.01" value="0.1">
+        <output id="decay-out">0.10 s</output>
+      </div>
+      <div class="field">
+        <label for="sustain">Sustain</label>
+        <input type="range" id="sustain" min="0" max="1" step="0.01" value="0.7">
+        <output id="sustain-out">0.70</output>
+      </div>
+      <div class="field">
+        <label for="release">Release</label>
+        <input type="range" id="release" min="0" max="1" step="0.01" value="0.2">
+        <output id="release-out">0.20 s</output>
+      </div>
+    </div>
+
+    <div class="keys" id="keyboard"></div>
+
+    <div class="actions">
+      <button class="btn-flat" id="play-note-btn">Play note</button>
+      <button class="btn-flat secondary" id="play-melody-btn">Play melody</button>
+    </div>
+    <div id="tone-status"></div>
+  </div>
+
   <canvas id="wave-canvas" width="800" height="120"></canvas>
   <noscript>
     <p>JavaScript is off, so the tone button and waveform preview are not shown. Reverb itself is a command line tool, see the usage section above for how to render WAV files.</p>
@@ -269,50 +405,248 @@ cargo test</pre>
 
 <script>
 (function () {
-  var btn = document.getElementById('tone-btn');
+  var SAMPLE_RATE = 44100;
+
+  // Mirrors src/oscillator.rs sample_at_phase()
+  function sampleAtPhase(waveform, phase) {
+    switch (waveform) {
+      case 'sine':
+        return Math.sin(2 * Math.PI * phase);
+      case 'square':
+        return phase < 0.5 ? 1.0 : -1.0;
+      case 'sawtooth':
+        return 2 * phase - 1;
+      case 'triangle':
+        return phase < 0.5 ? (4 * phase - 1) : (3 - 4 * phase);
+      default:
+        return 0;
+    }
+  }
+
+  // Mirrors src/oscillator.rs Oscillator::render()
+  function renderOscillator(waveform, freqHz, sampleRate, numSamples) {
+    var out = new Float32Array(numSamples);
+    for (var n = 0; n < numSamples; n++) {
+      var t = n / sampleRate;
+      var raw = freqHz * t;
+      var phase = raw - Math.floor(raw);
+      out[n] = sampleAtPhase(waveform, phase);
+    }
+    return out;
+  }
+
+  // Mirrors src/envelope.rs Adsr::amplitude_at()
+  function amplitudeAt(adsr, t, noteLen) {
+    var sustainEnd = Math.max(noteLen - adsr.release, 0.0);
+    if (t < adsr.attack) {
+      return adsr.attack <= 0.0 ? 1.0 : t / adsr.attack;
+    } else if (t < adsr.attack + adsr.decay) {
+      var dt = t - adsr.attack;
+      var frac = adsr.decay <= 0.0 ? 1.0 : dt / adsr.decay;
+      return 1.0 - frac * (1.0 - adsr.sustain);
+    } else if (t < sustainEnd) {
+      return adsr.sustain;
+    } else if (t < noteLen) {
+      var dt2 = t - sustainEnd;
+      var frac2 = adsr.release <= 0.0 ? 1.0 : dt2 / adsr.release;
+      return adsr.sustain * Math.max(1.0 - frac2, 0.0);
+    }
+    return 0.0;
+  }
+
+  // Mirrors src/envelope.rs Adsr::apply()
+  function applyEnvelope(adsr, samples, sampleRate) {
+    var noteLen = samples.length / sampleRate;
+    var out = new Float32Array(samples.length);
+    for (var n = 0; n < samples.length; n++) {
+      var t = n / sampleRate;
+      out[n] = samples[n] * amplitudeAt(adsr, t, noteLen);
+    }
+    return out;
+  }
+
+  // Mirrors src/notes.rs note_to_freq()
+  function noteToFreq(name) {
+    var letter = name[0].toUpperCase();
+    var semitoneFromC = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[letter];
+    if (semitoneFromC === undefined) return null;
+    var idx = 1;
+    var accidental = 0;
+    if (name[idx] === '#') { accidental = 1; idx++; }
+    else if (name[idx] === 'b') { accidental = -1; idx++; }
+    var octave = parseInt(name.slice(idx), 10);
+    if (isNaN(octave)) return null;
+    var semitone = semitoneFromC + accidental;
+    var midi = (octave + 1) * 12 + semitone;
+    var n = midi - 69;
+    return 440.0 * Math.pow(2, n / 12);
+  }
+
+  function renderNote(waveform, freqHz, adsr, durationSecs, sampleRate) {
+    var numSamples = Math.round(durationSecs * sampleRate);
+    var raw = renderOscillator(waveform, freqHz, sampleRate, numSamples);
+    return applyEnvelope(adsr, raw, sampleRate);
+  }
+
+  function currentAdsr() {
+    return {
+      attack: parseFloat(attackEl.value),
+      decay: parseFloat(decayEl.value),
+      sustain: parseFloat(sustainEl.value),
+      release: parseFloat(releaseEl.value)
+    };
+  }
+
+  var waveformEl = document.getElementById('waveform');
+  var octaveEl = document.getElementById('octave');
+  var freqEl = document.getElementById('freq');
+  var freqOut = document.getElementById('freq-out');
+  var attackEl = document.getElementById('attack');
+  var decayEl = document.getElementById('decay');
+  var sustainEl = document.getElementById('sustain');
+  var releaseEl = document.getElementById('release');
+  var attackOut = document.getElementById('attack-out');
+  var decayOut = document.getElementById('decay-out');
+  var sustainOut = document.getElementById('sustain-out');
+  var releaseOut = document.getElementById('release-out');
   var status = document.getElementById('tone-status');
   var canvas = document.getElementById('wave-canvas');
   var ctx = canvas.getContext('2d');
+  var keyboard = document.getElementById('keyboard');
+  var playNoteBtn = document.getElementById('play-note-btn');
+  var playMelodyBtn = document.getElementById('play-melody-btn');
 
-  function drawWave() {
+  var audioCtx = null;
+  function getAudioCtx() {
+    if (!audioCtx) {
+      var AudioCtx = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioCtx();
+    }
+    return audioCtx;
+  }
+
+  function playSamples(samples, sampleRate) {
+    var actx = getAudioCtx();
+    var buffer = actx.createBuffer(1, samples.length, sampleRate);
+    buffer.copyToChannel(Float32Array.from(samples), 0);
+    var source = actx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(actx.destination);
+    source.start();
+    return samples.length / sampleRate;
+  }
+
+  function drawSamples(samples) {
     var w = canvas.width, h = canvas.height;
     ctx.clearRect(0, 0, w, h);
     ctx.strokeStyle = '#0071e3';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    var freq = 440;
-    var cycles = 6;
-    for (var x = 0; x < w; x++) {
-      var t = (x / w) * cycles;
-      var y = h / 2 - Math.sin(t * 2 * Math.PI) * (h / 2 - 10);
+    var step = Math.max(1, Math.floor(samples.length / w));
+    var x = 0;
+    for (var i = 0; i < samples.length && x < w; i += step, x++) {
+      var y = h / 2 - samples[i] * (h / 2 - 10);
       if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
     ctx.stroke();
   }
 
-  drawWave();
+  function drawPreview() {
+    var waveform = waveformEl.value;
+    var freqHz = parseFloat(freqEl.value);
+    var preview = renderOscillator(waveform, freqHz, SAMPLE_RATE, Math.round(SAMPLE_RATE * 0.02));
+    drawSamples(preview);
+  }
 
-  btn.addEventListener('click', function () {
+  function updateOutputs() {
+    freqOut.textContent = Math.round(parseFloat(freqEl.value)) + ' Hz';
+    attackOut.textContent = parseFloat(attackEl.value).toFixed(2) + ' s';
+    decayOut.textContent = parseFloat(decayEl.value).toFixed(2) + ' s';
+    sustainOut.textContent = parseFloat(sustainEl.value).toFixed(2);
+    releaseOut.textContent = parseFloat(releaseEl.value).toFixed(2) + ' s';
+  }
+
+  [waveformEl, freqEl, attackEl, decayEl, sustainEl, releaseEl].forEach(function (el) {
+    el.addEventListener('input', function () {
+      updateOutputs();
+      drawPreview();
+    });
+  });
+
+  var NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+  function buildKeyboard() {
+    keyboard.innerHTML = '';
+    NOTE_NAMES.forEach(function (name) {
+      var key = document.createElement('div');
+      key.className = 'key';
+      key.textContent = name;
+      key.addEventListener('click', function () {
+        var octave = octaveEl.value;
+        var freqHz = noteToFreq(name + octave);
+        if (freqHz === null) return;
+        freqEl.value = Math.round(freqHz);
+        updateOutputs();
+        playFrequency(freqHz, 0.6, key);
+      });
+      keyboard.appendChild(key);
+    });
+  }
+
+  function playFrequency(freqHz, durationSecs, keyEl) {
     try {
-      var AudioCtx = window.AudioContext || window.webkitAudioContext;
-      var actx = new AudioCtx();
-      var osc = actx.createOscillator();
-      var gain = actx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = 440;
-      gain.gain.setValueAtTime(0.0001, actx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.3, actx.currentTime + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.9);
-      osc.connect(gain);
-      gain.connect(actx.destination);
-      osc.start();
-      osc.stop(actx.currentTime + 1.0);
-      status.textContent = 'Playing 440Hz for one second.';
-      setTimeout(function () { status.textContent = ''; }, 1200);
+      var waveform = waveformEl.value;
+      var adsr = currentAdsr();
+      var samples = renderNote(waveform, freqHz, adsr, durationSecs, SAMPLE_RATE);
+      drawSamples(samples);
+      var lenSecs = playSamples(samples, SAMPLE_RATE);
+      status.textContent = 'Playing ' + Math.round(freqHz) + ' Hz, ' + waveform + ' wave.';
+      if (keyEl) keyEl.classList.add('playing');
+      setTimeout(function () {
+        status.textContent = '';
+        if (keyEl) keyEl.classList.remove('playing');
+      }, lenSecs * 1000 + 100);
+    } catch (e) {
+      status.textContent = 'Web Audio is not available in this browser.';
+    }
+  }
+
+  playNoteBtn.addEventListener('click', function () {
+    var freqHz = parseFloat(freqEl.value);
+    playFrequency(freqHz, 0.9);
+  });
+
+  playMelodyBtn.addEventListener('click', function () {
+    try {
+      var actx = getAudioCtx();
+      var waveform = waveformEl.value;
+      var adsr = currentAdsr();
+      var melody = ['C4', 'E4', 'G4', 'C5', 'G4', 'E4', 'C4'];
+      var noteLen = 0.35;
+      var startTime = actx.currentTime;
+      var lastSamples = null;
+      melody.forEach(function (name, i) {
+        var freqHz = noteToFreq(name);
+        var samples = renderNote(waveform, freqHz, adsr, noteLen, SAMPLE_RATE);
+        lastSamples = samples;
+        var buffer = actx.createBuffer(1, samples.length, SAMPLE_RATE);
+        buffer.copyToChannel(Float32Array.from(samples), 0);
+        var source = actx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(actx.destination);
+        source.start(startTime + i * noteLen);
+      });
+      if (lastSamples) drawSamples(lastSamples);
+      status.textContent = 'Playing melody.';
+      setTimeout(function () { status.textContent = ''; }, melody.length * noteLen * 1000 + 200);
     } catch (e) {
       status.textContent = 'Web Audio is not available in this browser.';
     }
   });
+
+  buildKeyboard();
+  updateOutputs();
+  drawPreview();
 })();
 </script>
 
