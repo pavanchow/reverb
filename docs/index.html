@@ -2,11 +2,319 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>reverb</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reverb — audio synthesis in Rust</title>
+<meta name="description" content="Reverb is a small, readable audio synthesis in Rust project: oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer, no audio crates.">
+<meta name="author" content="Pavan Nallamothu">
+<link rel="canonical" href="https://pavanchow.github.io/reverb/">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Reverb — audio synthesis in Rust">
+<meta property="og:description" content="A small, readable audio synthesis in Rust project: oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer, no audio crates.">
+<meta property="og:url" content="https://pavanchow.github.io/reverb/">
+<meta property="og:site_name" content="Reverb">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Reverb — audio synthesis in Rust">
+<meta name="twitter:description" content="A small, readable audio synthesis in Rust project: oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer, no audio crates.">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Reverb",
+  "description": "A small, readable audio synthesis in Rust project: oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer, no audio crates.",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Cross-platform",
+  "author": {
+    "@type": "Person",
+    "name": "Pavan Nallamothu"
+  },
+  "url": "https://pavanchow.github.io/reverb/",
+  "programmingLanguage": "Rust"
+}
+</script>
+
+<style>
+  :root {
+    --text: #1d1d1f;
+    --muted: #6e6e73;
+    --bg: #ffffff;
+    --panel: #f5f5f7;
+    --accent: #0071e3;
+    --border: #d2d2d7;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  header {
+    padding: 96px 24px 64px;
+    text-align: center;
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  header h1 {
+    font-size: 56px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0 0 16px;
+  }
+
+  header p.tagline {
+    font-size: 24px;
+    color: var(--muted);
+    margin: 0 0 32px;
+    font-weight: 400;
+  }
+
+  .cta {
+    display: inline-flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 980px;
+    font-size: 17px;
+    text-decoration: none;
+    border: 1px solid var(--border);
+  }
+
+  .btn.primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .btn.secondary {
+    background: transparent;
+    color: var(--accent);
+  }
+
+  section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 24px;
+  }
+
+  section.panel {
+    background: var(--panel);
+    border-radius: 24px;
+    max-width: 900px;
+    margin: 32px auto;
+  }
+
+  h2 {
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-top: 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+
+  .card h3 {
+    margin: 0 0 8px;
+    font-size: 19px;
+  }
+
+  .card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  pre {
+    background: #1d1d1f;
+    color: #f5f5f7;
+    padding: 20px;
+    border-radius: 12px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .pipeline {
+    font-size: 15px;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 0.01em;
+  }
+
+  #tone-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 980px;
+    font-size: 17px;
+    cursor: pointer;
+  }
+
+  #tone-status {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  canvas {
+    width: 100%;
+    height: 120px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fff;
+  }
+
+  footer {
+    text-align: center;
+    padding: 48px 24px 96px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+</style>
 </head>
 <body>
-<h1>reverb</h1>
-<p>Site coming soon.</p>
-<p><a href="https://github.com/pavanchow/reverb">View repository</a></p>
+
+<header>
+  <h1>Reverb</h1>
+  <p class="tagline">Audio synthesis in Rust, built from scratch.</p>
+  <div class="cta">
+    <a class="btn primary" href="https://github.com/pavanchow/reverb">View on GitHub</a>
+    <a class="btn secondary" href="#how-it-works">How it works</a>
+  </div>
+</header>
+
+<section>
+  <p class="pipeline">note name &rarr; frequency &rarr; oscillator &rarr; ADSR envelope &rarr; sequence &rarr; mix &rarr; normalize &rarr; WAV bytes</p>
+</section>
+
+<section id="how-it-works">
+  <h2>What it does</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Oscillators</h3>
+      <p>Sine, square, sawtooth, and triangle waves at any frequency and sample rate, computed directly from phase.</p>
+    </div>
+    <div class="card">
+      <h3>ADSR envelope</h3>
+      <p>Attack, decay, sustain, and release shape every note so it fades in and out instead of clicking.</p>
+    </div>
+    <div class="card">
+      <h3>Sequencing and mixing</h3>
+      <p>Notes chain into a track, tracks mix together, and the result is normalized to stay in range.</p>
+    </div>
+    <div class="card">
+      <h3>WAV, by hand</h3>
+      <p>A RIFF header, fmt chunk, and data chunk written byte by byte. No audio or WAV crates involved.</p>
+    </div>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Usage</h2>
+  <pre>cargo build --release
+
+reverb tone --freq 440 --secs 2 -o out.wav
+
+reverb demo -o demo.wav
+
+cargo test</pre>
+</section>
+
+<section>
+  <h2>Try it in the browser</h2>
+  <p style="color: var(--muted);">This button uses the Web Audio API to play a 440Hz tone directly, a small live echo of what the <code>tone</code> command renders to a WAV file.</p>
+  <button id="tone-btn">Play 440Hz tone</button>
+  <div id="tone-status"></div>
+  <canvas id="wave-canvas" width="800" height="120"></canvas>
+  <noscript>
+    <p>JavaScript is off, so the tone button and waveform preview are not shown. Reverb itself is a command line tool, see the usage section above for how to render WAV files.</p>
+  </noscript>
+</section>
+
+<footer>
+  <p>By Pavan Nallamothu.</p>
+</footer>
+
+<script>
+(function () {
+  var btn = document.getElementById('tone-btn');
+  var status = document.getElementById('tone-status');
+  var canvas = document.getElementById('wave-canvas');
+  var ctx = canvas.getContext('2d');
+
+  function drawWave() {
+    var w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = '#0071e3';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    var freq = 440;
+    var cycles = 6;
+    for (var x = 0; x < w; x++) {
+      var t = (x / w) * cycles;
+      var y = h / 2 - Math.sin(t * 2 * Math.PI) * (h / 2 - 10);
+      if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  drawWave();
+
+  btn.addEventListener('click', function () {
+    try {
+      var AudioCtx = window.AudioContext || window.webkitAudioContext;
+      var actx = new AudioCtx();
+      var osc = actx.createOscillator();
+      var gain = actx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 440;
+      gain.gain.setValueAtTime(0.0001, actx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.3, actx.currentTime + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.9);
+      osc.connect(gain);
+      gain.connect(actx.destination);
+      osc.start();
+      osc.stop(actx.currentTime + 1.0);
+      status.textContent = 'Playing 440Hz for one second.';
+      setTimeout(function () { status.textContent = ''; }, 1200);
+    } catch (e) {
+      status.textContent = 'Web Audio is not available in this browser.';
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
