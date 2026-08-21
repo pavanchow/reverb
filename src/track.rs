@@ -73,7 +73,7 @@ mod tests {
         let b = vec![1.0f32; 100];
         let mixed = mix_and_normalize(&[a, b]);
         for s in mixed {
-            assert!(s <= 1.0 && s >= -1.0);
+            assert!((-1.0..=1.0).contains(&s));
         }
     }
 
