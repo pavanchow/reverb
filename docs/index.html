@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reverb — audio synthesis in Rust</title>
+<title>Reverb: audio synthesis in Rust</title>
 <meta name="description" content="Reverb is a small, readable audio synthesis in Rust project: oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer, no audio crates.">
 <meta name="author" content="Pavan Nallamothu">
 <link rel="canonical" href="https://pavanchow.github.io/reverb/">
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="Reverb — audio synthesis in Rust">
+<meta property="og:title" content="Reverb: audio synthesis in Rust">
 <meta property="og:description" content="A small, readable audio synthesis in Rust project: oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer, no audio crates.">
 <meta property="og:url" content="https://pavanchow.github.io/reverb/">
 <meta property="og:site_name" content="Reverb">
 
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Reverb — audio synthesis in Rust">
+<meta name="twitter:title" content="Reverb: audio synthesis in Rust">
 <meta name="twitter:description" content="A small, readable audio synthesis in Rust project: oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer, no audio crates.">
 
 <script type="application/ld+json">
@@ -36,372 +36,189 @@
 </script>
 
 <style>
-  :root {
-    --text: #1d1d1f;
-    --muted: #6e6e73;
-    --bg: #ffffff;
-    --panel: #f5f5f7;
-    --accent: #0071e3;
-    --border: #d2d2d7;
+  :root{
+    --accent:#c2622f;--accent-soft:#faeee5;
+    --ink:#15161c;--muted:#6a6d78;--faint:#9a9dab;
+    --line:#ececed;--panel:#f7f7f9;--panel2:#fbfbfd;
+    --mono:ui-monospace,SFMono-Regular,Menlo,"SF Mono",monospace;
   }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:#fff;color:var(--ink);
+    font:17px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 28px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
 
-  * { box-sizing: border-box; }
+  nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.82);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+  nav .row{display:flex;justify-content:space-between;align-items:center;height:56px;max-width:1040px;margin:0 auto;padding:0 28px}
+  nav .brand{display:flex;align-items:center;gap:9px;font-size:18px;font-weight:650;letter-spacing:-.01em}
+  nav .brand .gem{width:16px;height:16px;transform:rotate(45deg);border-radius:3px;background:linear-gradient(135deg,#e8a479,#c2622f)}
+  nav .links{display:flex;gap:26px;align-items:center}
+  nav .links a{color:var(--ink);font-size:14.5px}
+  @media(max-width:640px){nav .links a:not(.gh){display:none}}
 
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-  }
+  .hero{padding:70px 0 30px;text-align:center}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+  h1{font-size:clamp(40px,7vw,72px);line-height:1.03;letter-spacing:-.035em;font-weight:680;margin:18px 0 0}
+  .hero p.sub{max-width:620px;margin:24px auto 0;font-size:clamp(17px,2.1vw,21px);color:var(--muted)}
 
-  header {
-    padding: 96px 24px 64px;
-    text-align: center;
-    max-width: 780px;
-    margin: 0 auto;
-  }
+  .cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:32px}
+  .btn{display:inline-block;padding:11px 22px;border-radius:980px;font-size:15px;font-weight:600;border:1px solid var(--line)}
+  .btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .btn.secondary{background:#fff;color:var(--ink)}
+  .btn:hover{text-decoration:none;opacity:.85}
 
-  header h1 {
-    font-size: 56px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    margin: 0 0 16px;
-  }
+  .stage{max-width:900px;margin:44px auto 0;padding:0 28px}
+  .card{position:relative;background:linear-gradient(180deg,#fbfbff,#f4f4fb);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 1px 0 #fff inset,0 18px 50px -30px rgba(40,40,90,.35);padding:32px}
 
-  header p.tagline {
-    font-size: 24px;
-    color: var(--muted);
-    margin: 0 0 32px;
-    font-weight: 400;
-  }
+  .row{display:flex;flex-wrap:wrap;gap:24px;margin-bottom:20px;align-items:flex-end}
+  .field{display:flex;flex-direction:column;gap:6px;font-size:12px;font-family:var(--mono);color:var(--muted)}
+  .field select{font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;padding:7px 10px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+  .field select, .field input[type="range"]{accent-color:var(--accent)}
+  .field output{font-size:13px;font-family:var(--mono);color:var(--ink)}
 
-  .cta {
-    display: inline-flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+  .keys{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0}
+  .key{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:14px;cursor:pointer;min-width:48px;text-align:center}
+  .key:active,.key.playing{background:var(--accent);color:#fff;border-color:var(--accent)}
 
-  .btn {
-    display: inline-block;
-    padding: 12px 24px;
-    border-radius: 980px;
-    font-size: 17px;
-    text-decoration: none;
-    border: 1px solid var(--border);
-  }
+  .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+  .btn-flat{background:var(--ink);color:#fff;border:none;padding:11px 22px;border-radius:980px;font-size:14.5px;font-weight:600;cursor:pointer}
+  .btn-flat.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn-flat:hover{opacity:.85}
 
-  .btn.primary {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-  }
+  #tone-status{margin-top:14px;font-family:var(--mono);font-size:12.5px;color:var(--faint);min-height:16px}
 
-  .btn.secondary {
-    background: transparent;
-    color: var(--accent);
-  }
+  canvas#wave-canvas{width:100%;height:120px;border-radius:14px;border:1px solid var(--line);background:#fff;display:block;margin-top:22px}
 
-  section {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 48px 24px;
-  }
-
-  section.panel {
-    background: var(--panel);
-    border-radius: 24px;
-    max-width: 900px;
-    margin: 32px auto;
-  }
-
-  h2 {
-    font-size: 32px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    margin-top: 0;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 24px;
-    margin-top: 24px;
-  }
-
-  .card {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-  }
-
-  .card h3 {
-    margin: 0 0 8px;
-    font-size: 19px;
-  }
-
-  .card p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 15px;
-    line-height: 1.5;
-  }
-
-  pre {
-    background: #1d1d1f;
-    color: #f5f5f7;
-    padding: 20px;
-    border-radius: 12px;
-    overflow-x: auto;
-    font-size: 14px;
-    line-height: 1.6;
-  }
-
-  .pipeline {
-    font-size: 15px;
-    color: var(--muted);
-    text-align: center;
-    letter-spacing: 0.01em;
-  }
-
-  #tone-btn {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 980px;
-    font-size: 17px;
-    cursor: pointer;
-  }
-
-  #tone-status {
-    margin-top: 12px;
-    color: var(--muted);
-    font-size: 14px;
-  }
-
-  canvas {
-    width: 100%;
-    height: 120px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: #fff;
-  }
-
-  .synth {
-    background: var(--panel);
-    border-radius: 24px;
-    padding: 32px;
-    margin-top: 24px;
-  }
-
-  .row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 24px;
-    margin-bottom: 20px;
-    align-items: flex-end;
-  }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    font-size: 13px;
-    color: var(--muted);
-  }
-
-  .field select, .field input[type="range"] {
-    accent-color: var(--accent);
-  }
-
-  .field output {
-    font-size: 13px;
-    color: var(--text);
-  }
-
-  .keys {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin: 16px 0;
-  }
-
-  .key {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 14px;
-    cursor: pointer;
-    min-width: 48px;
-    text-align: center;
-  }
-
-  .key:active, .key.playing {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-  }
-
-  .actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-top: 8px;
-  }
-
-  .btn-flat {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 980px;
-    font-size: 15px;
-    cursor: pointer;
-  }
-
-  .btn-flat.secondary {
-    background: transparent;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-  }
-
-  footer {
-    text-align: center;
-    padding: 48px 24px 96px;
-    color: var(--muted);
-    font-size: 14px;
-  }
-
-  footer a {
-    color: var(--accent);
-    text-decoration: none;
-  }
+  section{padding:92px 0;border-top:1px solid var(--line)}
+  h2{font-size:clamp(27px,4.2vw,42px);line-height:1.12;letter-spacing:-.025em;font-weight:660;text-align:center;max-width:760px;margin:0 auto}
+  .lead{max-width:620px;margin:22px auto 0;text-align:center;color:var(--muted);font-size:18px}
+  .steps{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:900px;margin:48px auto 0}
+  @media(max-width:720px){.steps{grid-template-columns:1fr}}
+  .step{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:24px}
+  .step .n{display:inline-flex;width:28px;height:28px;border-radius:8px;background:var(--accent-soft);color:var(--accent);align-items:center;justify-content:center;font:700 13px var(--mono);margin-bottom:12px}
+  .step h3{font-size:17px;margin-bottom:6px}.step p{color:var(--muted);font-size:15px}
+  pre{background:#15161c;color:#ececf4;border-radius:14px;padding:20px 22px;font-family:var(--mono);font-size:13.5px;line-height:1.7;overflow-x:auto;max-width:640px;margin:40px auto 0}
+  pre .c{color:#8a8d9a}
+  footer{padding:64px 0;border-top:1px solid var(--line);text-align:center;color:var(--muted)}
+  footer .name{color:var(--ink);font-weight:600}
 </style>
 </head>
 <body>
-
-<header>
-  <h1>Reverb</h1>
-  <p class="tagline">Audio synthesis in Rust, built from scratch.</p>
-  <div class="cta">
-    <a class="btn primary" href="https://github.com/pavanchow/reverb">View on GitHub</a>
-    <a class="btn secondary" href="#how-it-works">How it works</a>
-  </div>
-</header>
-
-<section>
-  <p class="pipeline">note name &rarr; frequency &rarr; oscillator &rarr; ADSR envelope &rarr; sequence &rarr; mix &rarr; normalize &rarr; WAV bytes</p>
-</section>
-
-<section id="how-it-works">
-  <h2>What it does</h2>
-  <div class="grid">
-    <div class="card">
-      <h3>Oscillators</h3>
-      <p>Sine, square, sawtooth, and triangle waves at any frequency and sample rate, computed directly from phase.</p>
+  <nav><div class="row">
+    <div class="brand"><span class="gem"></span>Reverb</div>
+    <div class="links">
+      <a href="#demo">Demo</a><a href="#how">How it works</a><a href="#usage">Usage</a>
+      <a class="gh" href="https://github.com/pavanchow/reverb">GitHub</a>
     </div>
-    <div class="card">
-      <h3>ADSR envelope</h3>
-      <p>Attack, decay, sustain, and release shape every note so it fades in and out instead of clicking.</p>
-    </div>
-    <div class="card">
-      <h3>Sequencing and mixing</h3>
-      <p>Notes chain into a track, tracks mix together, and the result is normalized to stay in range.</p>
-    </div>
-    <div class="card">
-      <h3>WAV, by hand</h3>
-      <p>A RIFF header, fmt chunk, and data chunk written byte by byte. No audio or WAV crates involved.</p>
+  </div></nav>
+
+  <div id="demo" class="hero">
+    <p class="eyebrow">Rust · no audio crates · hand-written WAV</p>
+    <h1>Waveforms built<br>sample by sample.</h1>
+    <p class="sub">Reverb is an audio synthesis engine in Rust with oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer. No audio crates, no shortcuts. Here is the real math, running in your browser.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/pavanchow/reverb">View on GitHub</a>
+      <a class="btn secondary" href="#how">How it works</a>
     </div>
   </div>
-</section>
 
-<section class="panel">
-  <h2>Usage</h2>
-  <pre>cargo build --release
+  <div class="stage">
+    <div class="card">
+      <div class="row">
+        <div class="field">
+          <label for="waveform">Waveform</label>
+          <select id="waveform">
+            <option value="sine">Sine</option>
+            <option value="square">Square</option>
+            <option value="sawtooth">Sawtooth</option>
+            <option value="triangle">Triangle</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="octave">Octave</label>
+          <select id="octave">
+            <option value="3">3</option>
+            <option value="4" selected>4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="freq">Frequency (Hz)</label>
+          <input type="range" id="freq" min="55" max="1760" step="1" value="440">
+          <output id="freq-out">440 Hz</output>
+        </div>
+      </div>
 
+      <div class="row">
+        <div class="field">
+          <label for="attack">Attack</label>
+          <input type="range" id="attack" min="0" max="1" step="0.01" value="0.05">
+          <output id="attack-out">0.05 s</output>
+        </div>
+        <div class="field">
+          <label for="decay">Decay</label>
+          <input type="range" id="decay" min="0" max="1" step="0.01" value="0.1">
+          <output id="decay-out">0.10 s</output>
+        </div>
+        <div class="field">
+          <label for="sustain">Sustain</label>
+          <input type="range" id="sustain" min="0" max="1" step="0.01" value="0.7">
+          <output id="sustain-out">0.70</output>
+        </div>
+        <div class="field">
+          <label for="release">Release</label>
+          <input type="range" id="release" min="0" max="1" step="0.01" value="0.2">
+          <output id="release-out">0.20 s</output>
+        </div>
+      </div>
+
+      <div class="keys" id="keyboard"></div>
+
+      <div class="actions">
+        <button class="btn-flat" id="play-note-btn">Play note</button>
+        <button class="btn-flat secondary" id="play-melody-btn">Play melody</button>
+      </div>
+      <div id="tone-status"></div>
+
+      <canvas id="wave-canvas" width="800" height="120"></canvas>
+      <noscript>
+        <p style="margin-top:16px;color:#6a6d78">JavaScript is off, so the tone button and waveform preview are not shown. Reverb itself is a command line tool, see the usage section below for how to render WAV files.</p>
+      </noscript>
+    </div>
+  </div>
+
+  <section id="how">
+    <h2>What it does</h2>
+    <p class="lead">A short pipeline turns a note name into raw audio samples, with nothing borrowed along the way.</p>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><h3>Oscillators</h3><p>Sine, square, sawtooth, and triangle waves at any frequency and sample rate, computed directly from phase.</p></div>
+      <div class="step"><div class="n">2</div><h3>ADSR envelope</h3><p>Attack, decay, sustain, and release shape every note so it fades in and out instead of clicking.</p></div>
+      <div class="step"><div class="n">3</div><h3>Sequencing and mixing</h3><p>Notes chain into a track, tracks mix together, and the result is normalized to stay in range.</p></div>
+      <div class="step"><div class="n">4</div><h3>WAV, by hand</h3><p>A RIFF header, fmt chunk, and data chunk written byte by byte. No audio or WAV crates involved.</p></div>
+    </div>
+  </section>
+
+  <section id="usage">
+    <h2>Render from the command line.</h2>
+    <p class="lead">The same oscillator and envelope math you just heard, writing WAV files to disk.</p>
+    <pre><span class="c"># build the release binary</span>
+cargo build --release
+
+<span class="c"># render a single tone</span>
 reverb tone --freq 440 --secs 2 -o out.wav
 
+<span class="c"># render the built-in demo track</span>
 reverb demo -o demo.wav
 
 cargo test</pre>
-</section>
+  </section>
 
-<section>
-  <h2>Try it in the browser</h2>
-  <p style="color: var(--muted);">This is the same oscillator math and ADSR envelope as <code>src/oscillator.rs</code> and <code>src/envelope.rs</code>, run in JavaScript to fill a WebAudio buffer directly, no oscillator node involved. Pick a wave, shape the envelope, then play a note or a short melody.</p>
-
-  <div class="synth">
-    <div class="row">
-      <div class="field">
-        <label for="waveform">Waveform</label>
-        <select id="waveform">
-          <option value="sine">Sine</option>
-          <option value="square">Square</option>
-          <option value="sawtooth">Sawtooth</option>
-          <option value="triangle">Triangle</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="octave">Octave</label>
-        <select id="octave">
-          <option value="3">3</option>
-          <option value="4" selected>4</option>
-          <option value="5">5</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="freq">Frequency (Hz)</label>
-        <input type="range" id="freq" min="55" max="1760" step="1" value="440">
-        <output id="freq-out">440 Hz</output>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="field">
-        <label for="attack">Attack</label>
-        <input type="range" id="attack" min="0" max="1" step="0.01" value="0.05">
-        <output id="attack-out">0.05 s</output>
-      </div>
-      <div class="field">
-        <label for="decay">Decay</label>
-        <input type="range" id="decay" min="0" max="1" step="0.01" value="0.1">
-        <output id="decay-out">0.10 s</output>
-      </div>
-      <div class="field">
-        <label for="sustain">Sustain</label>
-        <input type="range" id="sustain" min="0" max="1" step="0.01" value="0.7">
-        <output id="sustain-out">0.70</output>
-      </div>
-      <div class="field">
-        <label for="release">Release</label>
-        <input type="range" id="release" min="0" max="1" step="0.01" value="0.2">
-        <output id="release-out">0.20 s</output>
-      </div>
-    </div>
-
-    <div class="keys" id="keyboard"></div>
-
-    <div class="actions">
-      <button class="btn-flat" id="play-note-btn">Play note</button>
-      <button class="btn-flat secondary" id="play-melody-btn">Play melody</button>
-    </div>
-    <div id="tone-status"></div>
-  </div>
-
-  <canvas id="wave-canvas" width="800" height="120"></canvas>
-  <noscript>
-    <p>JavaScript is off, so the tone button and waveform preview are not shown. Reverb itself is a command line tool, see the usage section above for how to render WAV files.</p>
-  </noscript>
-</section>
-
-<footer>
-  <p>By Pavan Nallamothu.</p>
-</footer>
+  <footer>
+    <p>An audio synthesis engine you can read end to end.</p>
+    <p style="margin-top:12px"><a href="https://github.com/pavanchow/reverb">github.com/pavanchow/reverb</a></p>
+    <p style="margin-top:12px">By <span class="name">Pavan Nallamothu</span>.</p>
+  </footer>
 
 <script>
 (function () {
@@ -539,7 +356,7 @@ cargo test</pre>
   function drawSamples(samples) {
     var w = canvas.width, h = canvas.height;
     ctx.clearRect(0, 0, w, h);
-    ctx.strokeStyle = '#0071e3';
+    ctx.strokeStyle = '#c2622f';
     ctx.lineWidth = 2;
     ctx.beginPath();
     var step = Math.max(1, Math.floor(samples.length / w));
