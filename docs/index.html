@@ -7,6 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="logo.svg">
 <meta name="description" content="Reverb is a small, readable audio synthesis in Rust project: oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer, no audio crates.">
 <meta name="author" content="Pavan Nallamothu (pavanchow)">
+<meta name="keywords" content="audio synthesis, Rust, DSP, oscillator, ADSR envelope, WAV writer, PCM, sine square sawtooth triangle, sound synthesis, waveform, Pavan Nallamothu, pavanchow">
 <link rel="canonical" href="https://pavanchow.github.io/reverb/">
 
 <meta property="og:type" content="website">
@@ -27,6 +28,7 @@
   "description": "A small, readable audio synthesis in Rust project: oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer, no audio crates.",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "Cross-platform",
+  "softwareVersion": "0.1.0",
   "author": {
     "@type": "Person",
     "name": "Pavan Nallamothu"
@@ -56,6 +58,7 @@
   nav .brand .gem{width:16px;height:16px;transform:rotate(45deg);border-radius:3px;background:linear-gradient(135deg,#e8a479,#c2622f)}
   nav .links{display:flex;gap:26px;align-items:center}
   nav .links a{color:var(--ink);font-size:14.5px}
+  nav .links .v{color:var(--faint);font-family:var(--mono);font-size:12px}
   @media(max-width:640px){nav .links a:not(.gh){display:none}}
 
   .hero{padding:70px 0 30px;text-align:center}
@@ -113,8 +116,9 @@
   <nav><div class="row">
     <div class="brand"><img src="logo.svg" class="brandlogo" alt="" width="22" height="22">Reverb</div>
     <div class="links">
-      <a href="#demo">Demo</a><a href="#how">How it works</a><a href="#usage">Usage</a>
+      <a href="#demo">Demo</a><a href="#how">How it works</a><a href="#different">Why</a><a href="#usage">Usage</a>
       <a class="gh" href="https://github.com/pavanchow/reverb">GitHub</a>
+      <span class="v">v0.1.0</span>
     </div>
   </div></nav>
 
@@ -215,19 +219,33 @@
     </div>
   </section>
 
+  <section id="different">
+    <h2>Why write it all by hand?</h2>
+    <p class="lead">The usual Rust audio path leans on crates: hound for WAV files, cpal or rodio for playback, a DSP crate for the math. Reverb does none of that, on purpose.</p>
+    <div class="steps">
+      <div class="step"><h3>No crates in the pipeline</h3><p>Every sample and every WAV byte is computed in this repo. Nothing hides the oscillator math or the RIFF layout behind a dependency.</p></div>
+      <div class="step"><h3>Small enough to read</h3><p>Oscillator, envelope, mixer, and WAV writer are a few short files. You can read the whole path from a note name to bytes on disk in one sitting.</p></div>
+      <div class="step"><h3>The math is the point</h3><p>Phase accumulation, the four waveform shapes, the ADSR curve, and 16-bit PCM quantization are all in plain view, not wrapped away.</p></div>
+      <div class="step"><h3>Portable output</h3><p>Standard 16-bit PCM WAV files that open in any player or editor, written header first by hand with no format library involved.</p></div>
+    </div>
+  </section>
+
   <section id="usage">
     <h2>Render from the command line.</h2>
-    <p class="lead">The same oscillator and envelope math you just heard, writing WAV files to disk.</p>
-    <pre><span class="c"># build the release binary</span>
-cargo build --release
+    <p class="lead">The same oscillator and envelope math you just heard, writing WAV files to disk. Real output below.</p>
+    <pre><span class="c">$ cargo build --release</span>
 
-<span class="c"># render a single tone</span>
-reverb tone --freq 440 --secs 2 -o out.wav
+<span class="c">$ reverb tone --freq 440 --secs 2 -o out.wav</span>
+wrote out.wav (88200 samples)
 
-<span class="c"># render the built-in demo track</span>
-reverb demo -o demo.wav
-
-cargo test</pre>
+<span class="c">$ reverb demo -o demo.wav</span>
+wrote demo.wav (108045 samples)</pre>
+    <div class="steps" style="margin-top:40px">
+      <div class="step"><div class="n" style="width:auto;padding:0 11px">tone</div><h3>A single steady tone</h3><p>Pick a frequency, a length, and a waveform with <code>--wave</code> (sine, square, sawtooth, triangle), and write it to a WAV file.</p></div>
+      <div class="step"><div class="n" style="width:auto;padding:0 11px">demo</div><h3>A built-in melody</h3><p>Render the short sequenced track so you can hear the sequencer and mixer without writing a manifest first.</p></div>
+      <div class="step"><div class="n" style="width:auto;padding:0 11px">cargo test</div><h3>The test suite</h3><p>Checks sample counts and range, WAV header correctness, envelope shape, and the waveform values themselves.</p></div>
+      <div class="step"><div class="n" style="width:auto;padding:0 11px">library</div><h3>Use it as a crate</h3><p>The oscillator, envelope, sequencer, mixer, and WAV writer are a plain Rust library, the same code this page ports to run in the browser.</p></div>
+    </div>
   </section>
 
   <footer>
