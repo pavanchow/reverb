@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Reverb logo">
+  <defs>
+    <linearGradient id="rv-g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e07a3c"/>
+      <stop offset="1" stop-color="#f0a05a"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="124" height="124" rx="28" fill="url(#rv-g)"/>
+  <path d="M16 64 Q31 22 46 64 Q61 106 76 64 Q88 30 100 64" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="100" y1="64" x2="112" y2="64" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="16" cy="64" r="5.5" fill="#ffffff"/>
+</svg>

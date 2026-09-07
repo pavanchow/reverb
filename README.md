@@ -1,3 +1,7 @@
+<img src="docs/logo.svg" alt="Reverb logo" width="96">
+
+# Reverb
+
 **A small, readable audio synthesis engine in Rust.**
 
 Reverb generates real sound from scratch and writes standard WAV files. No audio crates, no hidden DSP library, just oscillators, an envelope, a mixer, and a WAV writer you can read end to end in one sitting.

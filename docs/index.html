@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reverb: audio synthesis in Rust</title>
+<link rel="icon" type="image/svg+xml" href="logo.svg">
 <meta name="description" content="Reverb is a small, readable audio synthesis in Rust project: oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer, no audio crates.">
 <meta name="author" content="Pavan Nallamothu (pavanchow)">
 <link rel="canonical" href="https://pavanchow.github.io/reverb/">
@@ -118,6 +119,7 @@
   </div></nav>
 
   <div id="demo" class="hero">
+    <img src="logo.svg" alt="Reverb logo" width="72" height="72" style="display:block;margin:0 auto 18px">
     <p class="eyebrow">Rust · no audio crates · hand-written WAV</p>
     <h1>Waveforms built<br>sample by sample.</h1>
     <p class="sub">Reverb is an audio synthesis engine in Rust with oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer. No audio crates, no shortcuts. Here is the real math, running in your browser.</p>
@@ -191,6 +193,16 @@
       </noscript>
     </div>
   </div>
+
+  <section>
+    <details style="border:1px solid var(--line);border-radius:14px;padding:16px 22px;background:var(--accent-soft)">
+      <summary style="cursor:pointer;font-weight:600">How to use this playground</summary>
+      <div style="margin-top:12px">
+        <p>Pick a <b>waveform</b> (sine, square, sawtooth, or triangle) and an <b>octave</b>, then click a key on the on-screen keyboard or press <b>Play note</b> to hear it. The <b>frequency</b> slider tunes the pitch directly in hertz.</p>
+        <p style="margin-top:10px">The four <b>ADSR</b> sliders shape each note's volume over time: attack (fade in), decay (drop to sustain), sustain (held level), and release (fade out). Adjust them and play again to hear the change, and watch the waveform preview redraw the actual samples. <b>Play melody</b> sequences several notes so you can hear the mixer at work.</p>
+      </div>
+    </details>
+  </section>
 
   <section id="how">
     <h2>What it does</h2>
