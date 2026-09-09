@@ -3,39 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reverb: audio synthesis in Rust</title>
+<title>Reverb: an audio synthesis engine in Rust | Pavan Nallamothu</title>
 <link rel="icon" type="image/svg+xml" href="logo.svg">
-<meta name="description" content="Reverb is a small, readable audio synthesis in Rust project: oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer, no audio crates.">
-<meta name="author" content="Pavan Nallamothu (pavanchow)">
-<meta name="keywords" content="audio synthesis, Rust, DSP, oscillator, ADSR envelope, WAV writer, PCM, sine square sawtooth triangle, sound synthesis, waveform, Pavan Nallamothu, pavanchow">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="description" content="Reverb: a small, readable audio synthesis engine in Rust with oscillators, an ADSR envelope, mixing, and a hand-written WAV writer. By Pavan Nallamothu.">
+<meta name="author" content="Pavan Nallamothu">
+<meta name="keywords" content="audio synthesis, sound synthesis, DSP, digital signal processing, oscillator, ADSR envelope, WAV writer, PCM audio, waveform generation, sine square sawtooth triangle, audio synthesis in Rust, build a synthesizer, from scratch, Reverb, Pavan Nallamothu, pavanchow">
+<link rel="author" href="https://github.com/pavanchow">
 <link rel="canonical" href="https://pavanchow.github.io/reverb/">
-
 <meta property="og:type" content="website">
-<meta property="og:title" content="Reverb: audio synthesis in Rust">
-<meta property="og:description" content="A small, readable audio synthesis in Rust project: oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer, no audio crates.">
+<meta property="og:site_name" content="Pavan Nallamothu">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Reverb: an audio synthesis engine in Rust">
+<meta property="og:description" content="A small, readable audio synthesis engine in Rust: oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer, no audio crates. By Pavan Nallamothu.">
 <meta property="og:url" content="https://pavanchow.github.io/reverb/">
-<meta property="og:site_name" content="Reverb">
-
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Reverb: audio synthesis in Rust">
-<meta name="twitter:description" content="A small, readable audio synthesis in Rust project: oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer, no audio crates.">
-
+<meta property="og:image" content="https://pavanchow.github.io/reverb/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Reverb by Pavan Nallamothu">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Reverb: an audio synthesis engine in Rust">
+<meta name="twitter:description" content="A small, readable audio synthesis engine in Rust: oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer, no audio crates.">
+<meta name="twitter:image" content="https://pavanchow.github.io/reverb/og-image.png">
 <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "Reverb",
-  "description": "A small, readable audio synthesis in Rust project: oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer, no audio crates.",
-  "applicationCategory": "DeveloperApplication",
-  "operatingSystem": "Cross-platform",
-  "softwareVersion": "0.1.0",
-  "author": {
-    "@type": "Person",
-    "name": "Pavan Nallamothu"
-  },
-  "url": "https://pavanchow.github.io/reverb/",
-  "programmingLanguage": "Rust"
-}
+{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://pavanchow.github.io/reverb/#website","name":"Reverb by Pavan Nallamothu","url":"https://pavanchow.github.io/reverb/","author":{"@id":"https://github.com/pavanchow#person"}},{"@type":"Person","@id":"https://github.com/pavanchow#person","name":"Pavan Nallamothu","alternateName":"pavanchow","url":"https://github.com/pavanchow","jobTitle":"Software Engineer and Security Researcher","knowsAbout":["Rust","systems programming","compilers","distributed systems","data structures","algorithms","security research"],"sameAs":["https://github.com/pavanchow","https://hackerone.com/pavanchow"]},{"@type":"SoftwareApplication","@id":"https://pavanchow.github.io/reverb/#software","name":"Reverb","applicationCategory":"DeveloperApplication","operatingSystem":"Cross-platform","description":"Reverb is a small, readable audio synthesis engine in Rust: oscillators, an ADSR envelope, mixing, and a hand-written WAV file writer, with no audio crates.","url":"https://pavanchow.github.io/reverb/","image":"https://pavanchow.github.io/reverb/og-image.png","softwareVersion":"0.1.0","programmingLanguage":"Rust","codeRepository":"https://github.com/pavanchow/reverb","datePublished":"2026-08-21","author":{"@id":"https://github.com/pavanchow#person"},"publisher":{"@id":"https://github.com/pavanchow#person"},"keywords":"audio synthesis, DSP, oscillator, ADSR envelope, WAV writer, PCM audio, Rust","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"featureList":["Sine, square, sawtooth, and triangle oscillators","ADSR envelope","Signal mixing","Hand-written WAV file writer","Pure standard library, no audio crates"]},{"@type":"BreadcrumbList","@id":"https://pavanchow.github.io/reverb/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Pavan Nallamothu","item":"https://github.com/pavanchow"},{"@type":"ListItem","position":2,"name":"Reverb","item":"https://pavanchow.github.io/reverb/"}]},{"@type":"WebPage","@id":"https://pavanchow.github.io/reverb/#webpage","url":"https://pavanchow.github.io/reverb/","name":"Reverb: an audio synthesis engine in Rust | Pavan Nallamothu","isPartOf":{"@id":"https://pavanchow.github.io/reverb/#website"},"about":{"@id":"https://pavanchow.github.io/reverb/#software"},"author":{"@id":"https://github.com/pavanchow#person"},"inLanguage":"en"}]}
 </script>
 
 <style>
@@ -107,10 +98,6 @@
   footer{padding:64px 0;border-top:1px solid var(--line);text-align:center;color:var(--muted)}
   footer .name{color:var(--ink);font-weight:600}
 </style>
-<link rel="author" href="https://github.com/pavanchow">
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Person","name":"Pavan Nallamothu","alternateName":"pavanchow","url":"https://github.com/pavanchow","sameAs":["https://github.com/pavanchow","https://hackerone.com/pavanchow"]}
-</script>
 </head>
 <body>
   <nav><div class="row">
@@ -252,6 +239,8 @@ wrote demo.wav (108045 samples)</pre>
     <p>An audio synthesis engine you can read end to end.</p>
     <p style="margin-top:12px"><a href="https://github.com/pavanchow/reverb">github.com/pavanchow/reverb</a></p>
     <p style="margin-top:12px">By <span class="name">Pavan Nallamothu</span>.</p>
+    <p style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line);font-size:14px"><strong>More open-source tools by Pavan Nallamothu:</strong><br>
+    <a href="https://pavanchow.github.io/prism/">Prism, a software rasterizer in Rust</a> · <a href="https://pavanchow.github.io/newton/">Newton, a 2D physics engine in Rust</a> · <a href="https://pavanchow.github.io/synapse/">Synapse, a neural network from scratch in Rust</a> · <a href="https://pavanchow.github.io/forge/">Forge, a 2D game engine in Rust</a> · <a href="https://pavanchow.github.io/phantom/">Phantom, a CHIP-8 emulator in Rust</a> · <a href="https://github.com/pavanchow">all projects on GitHub</a></p>
   </footer>
 
 <script>
