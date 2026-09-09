@@ -95,6 +95,26 @@
   pre .c{color:#8a8d9a}
   footer{padding:64px 0;border-top:1px solid var(--line);text-align:center;color:var(--muted)}
   footer .name{color:var(--ink);font-weight:600}
+
+  @media (prefers-color-scheme: dark){
+    :root{
+      --accent:#e08a52;--accent-soft:#2a211b;
+      --ink:#ececf0;--muted:#a4a7b3;--faint:#71747f;
+      --line:#2a2b32;--panel:#17181e;--panel2:#1b1c22;
+    }
+    body{background:#0d0e12}
+    nav{background:rgba(13,14,18,.82)}
+    .btn.primary{background:var(--accent);color:#0d0e12;border-color:var(--accent)}
+    .btn.secondary{background:#17181e;color:var(--ink)}
+    .card{background:linear-gradient(180deg,#191a21,#131319);box-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 18px 50px -30px rgba(0,0,0,.6)}
+    .field select{background:#17181e;color:var(--ink)}
+    .field output{color:var(--ink)}
+    .key{background:#17181e;color:var(--ink)}
+    .key:active,.key.playing{background:var(--accent);color:#0d0e12;border-color:var(--accent)}
+    .btn-flat{background:var(--accent);color:#0d0e12}
+    .btn-flat.secondary{background:#17181e;color:var(--ink)}
+    canvas#wave-canvas{background:#131319}
+  }
 </style>
 </head>
 <body>
